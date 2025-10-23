@@ -1,71 +1,46 @@
-// Check if the current page is a PDF
-function isPDFPage() {
-  return document.contentType === 'application/pdf' || 
-         window.location.href.endsWith('.pdf') ||
-         document.querySelector('embed[type="application/pdf"]') !== null;
-}
+/* content.js (Final Version - Direct Style)
+  This script applies the style directly to the <html> tag,
+  which we proved works.
+*/
 
-// Apply dark mode styles
+// Applies dark mode by setting the inline style
 function applyDarkMode() {
-  if (!document.getElementById('pdf-dark-mode-style')) {
-    const style = document.createElement('style');
-    style.id = 'pdf-dark-mode-style';
-    style.textContent = `
-      html {
-        filter: invert(90%) hue-rotate(180deg) !important;
-        background-color: #1a1a1a !important;
-      }
-      
-      body {
-        background-color: #1a1a1a !important;
-      }
-      
-      embed, object, iframe {
-        filter: invert(100%) hue-rotate(180deg) !important;
-      }
-      
-      img, video {
-        filter: invert(100%) hue-rotate(180deg) !important;
-      }
-    `;
-    document.documentElement.appendChild(style); // <-- This is the fix
-    console.log('Dark mode applied');
-   // document.head.appendChild(style);
-    //console.log('Dark mode applied');
-  }
+  document.documentElement.style.filter = 'invert(1) hue-rotate(180deg)';
+  document.documentElement.style.backgroundColor = '#111';
+  console.log('Dark mode applied (direct style)');
 }
 
-// Remove dark mode styles
+// Removes dark mode by clearing the inline style
 function removeDarkMode() {
-  const style = document.getElementById('pdf-dark-mode-style');
-  if (style) {
-    style.remove();
-    console.log('Dark mode removed');
-  }
+  document.documentElement.style.filter = '';
+  document.documentElement.style.backgroundColor = '';
+  console.log('Dark mode removed (direct style)');
 }
 
-// Initialize dark mode based on saved preference
+// --- LOGIC TO RUN THE SCRIPT ---
+
+// 1. A function to check storage and update the style
 function initializeDarkMode() {
-  if (isPDFPage()) {
-    chrome.storage.sync.get(['darkModeEnabled'], (result) => {
-      if (result.darkModeEnabled) {
-        applyDarkMode();
-      }
-    });
-  }
-}
-
-// Listen for messages from popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'toggleDarkMode') {
-    if (request.enabled) {
+  chrome.storage.sync.get(['darkModeEnabled'], (result) => {
+    if (result.darkModeEnabled) {
       applyDarkMode();
     } else {
       removeDarkMode();
     }
-    sendResponse({ success: true });
+  });
+}
+
+// 2. Listen for ANY change in chrome.storage (from the popup toggle)
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (changes.darkModeEnabled) {
+    const isEnabled = changes.darkModeEnabled.newValue;
+    if (isEnabled) {
+      applyDarkMode();
+    } else {
+      removeDarkMode();
+    }
   }
 });
 
-// Initialize after the full page (including the PDF embed) has loaded
-window.addEventListener('load', initializeDarkMode);
+// 3. Initialize on page load
+initializeDarkMode();

@@ -1,3 +1,7 @@
+/* popup.js (Final Version)
+  This script only saves the toggle state to storage.
+*/
+
 // Get DOM elements
 const toggle = document.getElementById('darkModeToggle');
 const statusText = document.getElementById('statusText');
@@ -13,27 +17,13 @@ chrome.storage.sync.get(['darkModeEnabled'], (result) => {
 toggle.addEventListener('change', () => {
   const isEnabled = toggle.checked;
   
-  // Save the state
+  // 1. Save the state to storage
   chrome.storage.sync.set({ darkModeEnabled: isEnabled });
   
-  // Update status text
+  // 2. Update status text
   updateStatusText(isEnabled);
   
-  // Send message to content script
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, {
-        action: 'toggleDarkMode',
-        enabled: isEnabled
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          console.log('Could not send message:', chrome.runtime.lastError.message);
-          // Reload the tab to apply changes
-          chrome.tabs.reload(tabs[0].id);
-        }
-      });
-    }
-  });
+  // 3. (We don't send a message, content.js listens for the storage change)
 });
 
 // Update status text
