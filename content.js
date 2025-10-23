@@ -65,5 +65,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// Initialize on page load
-initializeDarkMode();
+// Initialize after the full page (including the PDF embed) has loaded
+window.addEventListener('load', initializeDarkMode);
