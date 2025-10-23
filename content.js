@@ -28,8 +28,10 @@ function applyDarkMode() {
         filter: invert(100%) hue-rotate(180deg) !important;
       }
     `;
-    document.head.appendChild(style);
+    document.documentElement.appendChild(style); // <-- This is the fix
     console.log('Dark mode applied');
+   // document.head.appendChild(style);
+    //console.log('Dark mode applied');
   }
 }
 
